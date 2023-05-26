@@ -1,0 +1,26 @@
+import openai
+import requests
+from PIL import Image
+import io
+
+openai.api_key = 'API_KEY'
+
+def generate(text):
+    res = openai.Image.create(
+        prompt=text,
+        n=1,
+        size="256x256",
+    )
+    return res["data"][0]["url"]
+
+a = input('Enter description: ')
+url1 = generate(a)
+response = requests.get(url1)
+
+if response.status_code == 200 and response.headers["Content-Type"].startswith("image"):
+    image_data = response.content
+    image = Image.open(io.BytesIO(image_data))
+    image.show()
+else:
+    print("Failed to retrieve the image.")
+
