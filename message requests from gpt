@@ -1,20 +1,61 @@
 import openai
-import requests
-from PIL import Image
+import pyttsx3
+import speech_recognition as sr
 
+openai.api_key = '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'
+engine = pyttsx3.init()
+rate = engine.getProperty("rate")
+engine.setProperty("rate", rate - 50)
 
-openai.api_key = 'API_KEY'
-messages = [ {"role": "system", "content":
-			"You are a intelligent assistant."} ]
-while True:
-	message = input("User : ")
-	if message:
-		messages.append(
-			{"role": "user", "content": message},
-		)
-		chat = openai.ChatCompletion.create(
-			model="gpt-3.5-turbo", messages=messages
-		)
-	reply = chat.choices[0].message.content
-	print(f"ChatGPT: {reply}")
-	messages.append({"role": "assistant", "content": reply})
+def get_user_input():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        audio = r.listen(source)
+
+    try:
+        user_input = r.recognize_google(audio)
+        print("You:", user_input)
+    except sr.UnknownValueError:
+        print("Sorry, I didn't catch that.")
+        user_input = ""
+    except sr.RequestError:
+        print("Sorry, I couldn't reach the speech recognition service.")
+        user_input = ""
+
+    return user_input
+
+def get_chatbot_response(user_input):
+    messages = [
+        {"role": "system", "content": "You are an intelligent assistant."},
+        {"role": "user", "content": user_input}
+    ]
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=messages,
+        max_tokens=50
+    )
+
+    reply = response.choices[0].message.content
+    print("Assistant:", reply)
+    engine.say(reply)
+    engine.runAndWait()
+
+# Ask for voice commands at the beginning
+use_voice_input = input("Use voice commands? (Y/N): ")
+
+if use_voice_input.upper() == "Y":
+    while True:
+        user_input = get_user_input()
+        if user_input:
+            get_chatbot_response(user_input)
+        else:
+            break
+else:
+    while True:
+        user_input = input("User: ")
+        if user_input:
+            get_chatbot_response(user_input)
+        else:
+            break
