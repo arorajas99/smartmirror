@@ -2,7 +2,7 @@ import openai
 import pyttsx3
 import speech_recognition as sr
 
-openai.api_key = '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'
+openai.api_key = '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'
 engine = pyttsx3.init()
 rate = engine.getProperty("rate")
 engine.setProperty("rate", rate - 50)
@@ -11,7 +11,7 @@ def get_user_input():
     r = sr.Recognizer()
     with sr.Microphone() as source:
         print("Listening...")
-        audio = r.listen(source)
+        audio = r.listen(source, phrase_time_limit=5)  # Adjust the phrase_time_limit as needed
 
     try:
         user_input = r.recognize_google(audio)
